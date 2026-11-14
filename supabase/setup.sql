@@ -338,7 +338,7 @@ alter table public.admins enable row level security;
 revoke all on public.admins from anon, authenticated;
 -- No policies: the table is readable only through is_admin() and the service role.
 
-insert into public.admins (email) values ('buraaqteam@gmail.com') on conflict do nothing;
+insert into public.admins (email) values ('zafarmaarij@gmail.com') on conflict do nothing;
 
 create or replace function public.is_admin()
 returns boolean
