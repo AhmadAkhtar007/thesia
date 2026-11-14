@@ -1,0 +1,28 @@
+{
+  "name": "thesia",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Thesia: the research network and learning platform for students. Find people working on your question, join real projects, learn research methods, and build public proof of your work.",
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/build.mjs --serve",
+    "build": "node scripts/build.mjs",
+    "build:artifact": "node scripts/build.mjs --target=artifact",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "marked": "18.0.10",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "react-icons": "5.7.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "esbuild": "0.28.2",
+    "typescript": "^5.9.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
