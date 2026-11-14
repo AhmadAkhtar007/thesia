@@ -20,10 +20,11 @@
 import * as esbuild from 'esbuild';
 import fs from 'node:fs';
 import os from 'node:os';
+import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 
-const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
 const serve = args.includes('--serve');
 const target = (args.find((a) => a.startsWith('--target=')) || '--target=web').split('=')[1];
