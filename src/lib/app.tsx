@@ -8,13 +8,16 @@ import { repo, lessonKey, type SavedItem, type SavedKind } from './repo';
 import { auth as sbAuth, onAuthChange } from './supabase';
 import { readJSON, removeKey, uid, writeJSON } from './storage';
 import { PASS_MARK, TRACKS } from '../data/academy';
-import type { Profile } from './types';
+import type { LessonProgress, Profile } from './types';
+
 import { useNavigate, useLocation } from './router';
 
 type User = { id: string; email: string; name?: string };
 
 type AppValue = {
   ready: boolean;
+  /** True once the learner's lesson progress has loaded (used to avoid flashing locked lessons). */
+  progressReady: boolean;
   user: User | null;
   profile: Profile | null;
   live: boolean;
@@ -27,7 +30,7 @@ type AppValue = {
   saved: SavedItem[];
   isSaved: (kind: SavedKind, id: string) => boolean;
   toggleSaved: (kind: SavedKind, id: string) => Promise<void>;
-  progress: Record<string, { completedAt: string; score: number }>;
+  progress: Record<string, LessonProgress>;
   /** Records a lesson. When it finishes a track, claims the certificate and returns its id. */
   completeLesson: (trackId: string, lessonId: string, score: number) => Promise<string | null>;
   isAdmin: boolean;
@@ -43,6 +46,8 @@ type AppValue = {
 const AppCtx = createContext<AppValue | null>(null);
 
 const DEMO_USER_KEY = 'demo-user';
+/** Demo visitors earn XP and badges without an account, so judges can play the whole curriculum. */
+const GUEST_LEARNER = 'demo-guest';
 
 function blankProfile(user: User): Profile {
   return {
@@ -91,6 +96,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const loc = useLocation();
   const [ready, setReady] = useState(false);
+  const [progressReady, setProgressReady] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [saved, setSaved] = useState<SavedItem[]>([]);
@@ -128,30 +134,45 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setReady(true);
   }, [toast]);
 
-  // Load the signed-in person's data.
+  // Load the signed-in person's data. In demo mode a signed-out visitor still gets a learner
+  // record, so lessons, XP and badges work end to end without an account.
   useEffect(() => {
     let cancelled = false;
-    if (!user) {
+    const learnerId = user?.id ?? (LIVE ? null : GUEST_LEARNER);
+    if (!learnerId) {
       setProfile(null);
       setSaved([]);
       setProgress({});
       setIsAdmin(false);
       setUnread(0);
+      setProgressReady(true);
       return;
     }
-    repo.isAdmin().then((a) => !cancelled && setIsAdmin(LIVE ? a : false)).catch(() => {});
+    setProgressReady(false);
+    if (user) repo.isAdmin().then((a) => !cancelled && setIsAdmin(LIVE ? a : false)).catch(() => {});
     (async () => {
       try {
-        const [p, s, pr] = await Promise.all([repo.getProfile(user.id), repo.listSaved(user.id), repo.getProgress(user.id)]);
+        const [p, s, pr] = await Promise.all([
+          user ? repo.getProfile(user.id) : Promise.resolve(null),
+          user ? repo.listSaved(user.id) : Promise.resolve([]),
+          repo.getProgress(learnerId),
+        ]);
         if (cancelled) return;
-        const prof = p ? { ...p, email: user.email } : { ...blankProfile(user), referredBy: referral };
-        if (!p && !LIVE) await repo.saveProfile(prof);
+        let prof: Profile | null = null;
+        if (user) {
+          prof = p ? { ...p, email: user.email } : { ...blankProfile(user), referredBy: referral };
+          if (!p && !LIVE) await repo.saveProfile(prof);
+        }
         setProfile(prof);
         setSaved(s);
         setProgress(pr);
-        if (prof.country && !countryTouched.current) setCountryState(prof.country);
+        setProgressReady(true);
+        if (prof?.country && !countryTouched.current) setCountryState(prof.country);
       } catch (e: any) {
-        if (!cancelled) toast(`Couldn’t load your account: ${e?.message || 'network error'}.`);
+        if (!cancelled) {
+          setProgressReady(true);
+          toast(`Couldn’t load your account: ${e?.message || 'network error'}.`);
+        }
       }
     })();
     return () => {
@@ -247,16 +268,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const completeLesson = useCallback(
     async (trackId: string, lessonId: string, score: number) => {
-      if (!user) return null;
-      await repo.completeLesson(user.id, trackId, lessonId, score);
-      const next = { ...progress, [lessonKey(trackId, lessonId)]: { completedAt: new Date().toISOString(), score } };
+      const learnerId = user?.id ?? (LIVE ? null : GUEST_LEARNER);
+      if (!learnerId) return null;
+      const key = lessonKey(trackId, lessonId);
+      const prev = progress[key];
+      const best = Math.max(prev?.score ?? 0, score);
+      await repo.completeLesson(learnerId, trackId, lessonId, score);
+      const next = { ...progress, [key]: { completedAt: new Date().toISOString(), score: best } };
       setProgress(next);
       const track = TRACKS.find((t) => t.id === trackId);
       if (!track || !track.lessons.every((l) => (next[lessonKey(track.id, l.id)]?.score ?? -1) >= PASS_MARK)) return null;
       try {
-        const certId = await repo.claimTrackCertificate(user.id, trackId);
-        const fresh = await repo.getProfile(user.id);
-        if (fresh) setProfile((p) => (p ? { ...p, badges: fresh.badges } : p));
+        const certId = await repo.claimTrackCertificate(learnerId, trackId);
+        if (user) {
+          const fresh = await repo.getProfile(user.id);
+          if (fresh) setProfile((p) => (p ? { ...p, badges: fresh.badges } : p));
+        }
         refreshUnread();
         return certId;
       } catch {
@@ -275,6 +302,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const value = useMemo<AppValue>(
     () => ({
       ready,
+      progressReady,
       user,
       profile,
       live: LIVE,
@@ -298,7 +326,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       refreshUnread,
       referral,
     }),
-    [ready, user, profile, signUp, signIn, sendMagicLink, signOut, saveProfile, saved, isSaved, toggleSaved, progress, completeLesson, country, setCountry, toast, requireAuth, isAdmin, unread, refreshUnread, referral]
+    [ready, progressReady, user, profile, signUp, signIn, sendMagicLink, signOut, saveProfile, saved, isSaved, toggleSaved, progress, completeLesson, country, setCountry, toast, requireAuth, isAdmin, unread, refreshUnread, referral]
   );
 
   return (

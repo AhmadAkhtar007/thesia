@@ -225,15 +225,39 @@ export interface Bootcamp {
   b2b?: boolean;
 }
 
-export interface Lesson {
-  id: string;
+/** A lesson is played as four steps: concept, professor's field rule, real example, then the check. */
+export type LessonStepKind = 'concept' | 'rule' | 'example';
+
+export interface LessonStep {
+  kind: LessonStepKind;
   title: string;
-  minutes: number;
-  summary: string;
   body: string; // markdown
-  takeaways: string[];
-  quiz: QuizQuestion[];
-  tool?: string; // related tool route
+}
+
+export interface ExerciseOption {
+  text: string;
+  correct: boolean;
+  why: string;
+}
+
+/** The interactive mini-exercise that sits before the knowledge check. */
+export interface Exercise {
+  title: string;
+  prompt: string;
+  options: ExerciseOption[];
+}
+
+export interface LessonTemplate {
+  title: string;
+  filename: string;
+  body: string; // plain text or markdown
+}
+
+/** Open university guides, handbooks and checklists the lesson is built from. */
+export interface LessonSource {
+  title: string;
+  url: string;
+  note: string;
 }
 
 export interface QuizQuestion {
@@ -243,13 +267,37 @@ export interface QuizQuestion {
   why: string;
 }
 
+export interface Lesson {
+  id: string;
+  title: string;
+  minutes: number;
+  xp: number; // base XP for completing the lesson; the quiz adds up to 10 more
+  summary: string;
+  steps: LessonStep[];
+  takeaways: string[];
+  exercise: Exercise;
+  quiz: QuizQuestion[];
+  template?: LessonTemplate;
+  tool?: string; // related tool route
+  skillTags: string[]; // used for track badges and the talent pool
+}
+
 export interface Track {
   id: string;
   title: string;
+  short: string; // badge label
   level: 'Beginner' | 'Intermediate' | 'Advanced';
   audience: string;
   summary: string;
+  outcome: string; // what a learner can do at the end of the track
+  skills: string[];
   lessons: Lesson[];
+}
+
+/** One row of public.lesson_progress. XP is derived from these rows, not stored separately. */
+export interface LessonProgress {
+  completedAt: string;
+  score: number;
 }
 
 export interface Profile {

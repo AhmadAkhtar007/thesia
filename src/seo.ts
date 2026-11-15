@@ -45,11 +45,18 @@ export function seoRoutes(siteUrl: string): SeoRoute[] {
     { path: '/conferences', title: 'Research conferences in Pakistan, 2026', description: 'Verified research conferences in Pakistan with paper deadlines, dates, indexing and whether students can take part.', priority: 0.9 },
     { path: '/labs', title: 'Research labs and centres in Pakistan', description: 'Where research happens in Pakistan, what each lab works on, and how students usually get involved.' },
     { path: '/opportunities', title: 'Research fellowships and programmes for students', description: 'Funded research programmes, summer schools and scholarships open to students from Pakistan and many other countries, linked to official pages.' },
-    { path: '/learn', title: 'Thesia Academy: free research lessons', description: 'Short, free lessons on how research works, from your first question to your first paper, each with a quiz and a certificate for every track.', priority: 0.9 },
+    {
+      path: '/learn',
+      title: 'Thesia Learn: free applied research courses',
+      description:
+        'Four gamified tracks take university students from a company question to a signed-off report: scoping, fieldwork, analysis and executive writing. Free lessons, exercises, XP and track badges.',
+      priority: 0.9,
+    },
     ...TRACKS.map((t) => ({
       path: `/learn/${t.id}`,
-      title: `${t.title}: free course`,
-      description: t.summary,
+      title: `${t.title}: free applied research course`,
+      description: `${t.summary} ${t.outcome}`,
+      priority: 0.8,
       jsonld: {
         '@context': 'https://schema.org',
         '@type': 'Course',

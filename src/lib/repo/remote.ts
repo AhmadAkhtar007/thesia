@@ -349,9 +349,13 @@ export const remoteRepo: Repo = {
     return out;
   },
   async completeLesson(userId, trackId, lessonId, score) {
+    const key = lessonKey(trackId, lessonId);
+    // Keep the best attempt: a retake that scores lower must not remove XP the learner earned.
+    const prev = await db.one('lesson_progress', `select=score&user_id=eq.${userId}&lesson_key=eq.${enc(key)}`);
+    const best = Math.max(Number(prev?.score ?? 0), score);
     await db.upsert(
       'lesson_progress',
-      { user_id: userId, lesson_key: lessonKey(trackId, lessonId), score, completed_at: new Date().toISOString() },
+      { user_id: userId, lesson_key: key, score: best, completed_at: new Date().toISOString() },
       'user_id,lesson_key'
     );
   },

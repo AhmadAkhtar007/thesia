@@ -193,7 +193,7 @@ function Footer() {
           <div>
             <h4>Learn</h4>
             <ul>
-              <li><Link to="/learn">Academy</Link></li>
+              <li><Link to="/learn">Free courses</Link></li>
               <li><Link to="/bootcamps">Live bootcamps</Link></li>
               <li><Link to="/tools">Research tools</Link></li>
               <li><Link to="/guide">Research guide</Link></li>

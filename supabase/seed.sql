@@ -134,11 +134,10 @@ on conflict (id) do nothing;
 -- Academy tracks and bootcamps, used for certificates and free-cohort access.
 insert into public.track_catalog (id, title, lesson_ids)
 values
-('foundations', 'Research foundations', array['what-is-research','research-question','finding-papers','reading-papers','literature-review','ethics-basics']::text[]),
-('getting-in', 'Getting into research', array['emailing-researchers','research-passport','ra-and-summer','graduate-study']::text[]),
-('methods', 'Methods and analysis', array['choosing-a-method','sampling','survey-design','interviews-thematic','statistics-essentials','reproducible-workflow']::text[]),
-('publishing', 'Publishing and presenting', array['imrad','choosing-a-venue','peer-review','posters-and-talks','authorship']::text[]),
-('ai', 'AI in research, responsibly', array['ai-without-fooling-yourself','ai-literature-search']::text[])
+('scoping', 'Scoping & literature review', array['company-question','search-strategy','read-a-paper','literature-matrix']::text[]),
+('fieldwork', 'Survey & field methodology', array['design-fit','sampling','writing-questions','fieldwork-ethics']::text[]),
+('analysis', 'Data analysis & synthesis', array['prepare-data','describe-data','choose-test','qualitative-synthesis']::text[]),
+('reporting', 'Executive reports & citations', array['report-structure','write-findings','citations','review-and-signoff']::text[])
 on conflict (id) do update set title = excluded.title, lesson_ids = excluded.lesson_ids;
 
 insert into public.bootcamp_catalog (id, title, price_usd, weeks, start_date)

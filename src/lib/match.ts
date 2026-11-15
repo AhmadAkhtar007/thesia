@@ -171,7 +171,8 @@ export const rankLessons = (items: { track: Track; lesson: Lesson }[], q: QueryT
     [x.lesson.title, 4],
     [x.lesson.summary, 2],
     [x.lesson.takeaways.join(' '), 2],
-    [x.lesson.body, 0.6],
+    [x.lesson.skillTags.join(' '), 1.5],
+    [x.lesson.steps.map((s) => s.title + ' ' + s.body).join(' '), 0.6],
   ]);
 
 export const rankBootcamps = (items: Bootcamp[], q: QueryTerms) =>

@@ -17,6 +17,7 @@ import type {
   Contribution,
   CreditRole,
   Enrollment,
+  LessonProgress,
   Message,
   Notice,
   Organization,
@@ -42,7 +43,7 @@ type DB = {
   applications: Application[];
   profiles: Profile[];
   saved: Record<string, SavedItem[]>;
-  progress: Record<string, Record<string, { completedAt: string; score: number }>>;
+  progress: Record<string, Record<string, LessonProgress>>;
   enrollments: Enrollment[];
   submissions: InboxItem[];
   certificates: Certificate[];
@@ -314,7 +315,11 @@ export const localRepo: Repo = {
     return delay(db.progress[userId] || {});
   },
   async completeLesson(userId, trackId, lessonId, score) {
-    db.progress[userId] = { ...(db.progress[userId] || {}), [lessonKey(trackId, lessonId)]: { completedAt: now(), score } };
+    const key = lessonKey(trackId, lessonId);
+    const prev = db.progress[userId]?.[key];
+    // A retake never lowers a recorded score: XP and pass marks use the best attempt.
+    const best = Math.max(prev?.score ?? 0, score);
+    db.progress[userId] = { ...(db.progress[userId] || {}), [key]: { completedAt: now(), score: best } };
     persist();
   },
 
