@@ -3,6 +3,7 @@ import { LuArrowRight, LuBadgeCheck, LuCircleCheck, LuClock, LuEye } from 'react
 import { ExerciseCard, QuizItem, StepCard, TemplateCard } from '../components/learn/LessonCards';
 import { PageHead } from '../components/ui';
 import { PASS_MARK, lessonById, TRACKS } from '../data/academy';
+import { sourcesFor } from '../data/academy/sources';
 import { useApp } from '../lib/app';
 import { lessonUnlocked, lessonXp } from '../lib/learn';
 import { lessonKey } from '../lib/repo';
@@ -46,6 +47,7 @@ function LessonView({ track, lesson, index }: { track: Track; lesson: Lesson; in
   const canComplete = allAnswered && passed && exerciseCorrect;
   const gained = lessonXp(lesson, { completedAt: '', score });
   const earned = lessonXp(lesson, record);
+  const sources = sourcesFor(track.id, lesson.id);
 
   const complete = async () => {
     if (!user && live) {
@@ -293,6 +295,23 @@ function LessonView({ track, lesson, index }: { track: Track; lesson: Lesson; in
               ))}
             </ul>
           </div>
+          {sources.length > 0 && (
+            <section className="panel stack source-panel" style={{ ['--gap' as any]: '10px' }} aria-labelledby="sources-h">
+              <h3 id="sources-h" style={{ fontSize: 'var(--t-md)', fontFamily: 'var(--font-body)' }}>
+                Sources &amp; further reading
+              </h3>
+              <ul className="source-list">
+                {sources.map((s) => (
+                  <li key={s.url}>
+                    <a href={s.url} target="_blank" rel="noreferrer noopener">
+                      {s.title}
+                    </a>
+                    <p className="xsmall muted">{s.note}</p>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
           <div className="stack" style={{ ['--gap' as any]: '6px' }}>
             <h3 style={{ fontSize: 'var(--t-sm)', fontFamily: 'var(--font-body)' }}>In this track</h3>
             <ol style={{ margin: 0, paddingLeft: '1.3em', display: 'grid', gap: 6 }} className="small">
