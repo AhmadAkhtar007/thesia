@@ -86,6 +86,7 @@ export function seoRoutes(siteUrl: string): SeoRoute[] {
     { path: '/institutions', title: 'Thesia for schools, universities and companies', description: 'Run a research programme for your students, give your ORIC a dashboard, or post an industry research challenge.', priority: 0.8 },
     { path: '/challenges', title: 'Industry research challenges', description: 'Companies post a real question and a supervised student squad answers it in eight to ten weeks.' },
     { path: '/impact', title: 'Why Thesia exists', description: 'Talent for research is everywhere. Ways into research are not. The evidence behind Thesia, starting in Pakistan.' },
+    { path: '/faculty', title: 'Faculty workspace (demo)', description: 'A demo of the faculty side of Thesia: prioritised student reviews, AI first-pass screening held to critical checks, sign-off and supervision analytics. Illustrative data stored in your browser.', priority: 0.4 },
     { path: '/safeguarding', title: 'Keeping students safe', description: 'How Thesia protects students under 18: private passports, on-platform messages, a teacher in every school session and a one-day response to reports.' },
     { path: '/certificate/verify', title: 'Verify a Thesia certificate', description: 'Check a Thesia Academy or bootcamp certificate by its ID.' },
     { path: '/org/sample', title: 'Sample school dashboard', description: 'What a school coordinator sees on Thesia: every student’s lessons, certificates and applications, with a CSV export.' },

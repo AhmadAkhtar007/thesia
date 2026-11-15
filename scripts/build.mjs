@@ -20,7 +20,7 @@
 import * as esbuild from 'esbuild';
 import fs from 'node:fs';
 import os from 'node:os';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 
@@ -64,7 +64,7 @@ const esc = (v) => String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 async function loadSeoRoutes() {
   const tmp = path.join(os.tmpdir(), `thesia-seo-${Date.now()}.mjs`);
   await esbuild.build({ entryPoints: [path.join(root, 'src/seo.ts')], bundle: true, format: 'esm', platform: 'node', outfile: tmp, logLevel: 'warning' });
-  const mod = await import(tmp);
+  const mod = await import(pathToFileURL(tmp).href);
   fs.rmSync(tmp);
   return mod.seoRoutes(SITE_URL);
 }

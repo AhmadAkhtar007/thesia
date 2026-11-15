@@ -213,6 +213,7 @@ function Footer() {
             <h4>Thesia</h4>
             <ul>
               <li><Link to="/impact">Why Thesia</Link></li>
+              <li><Link to="/faculty">Faculty workspace (demo)</Link></li>
               <li><Link to="/pricing">Pricing</Link></li>
               <li><Link to="/institutions">For institutions</Link></li>
               <li><Link to="/certificate/verify">Verify a certificate</Link></li>
