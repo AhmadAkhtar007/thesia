@@ -1,365 +1,294 @@
-import { useMemo, useState } from 'react';
-import { LuCircleCheck } from 'react-icons/lu';
-import { Markdown, PageHead } from '../components/ui';
+import { useMemo } from 'react';
+import { LuArrowRight, LuAward, LuBadgeCheck, LuBookOpen, LuChartLine, LuClipboardList, LuFileText, LuGraduationCap, LuSearch, LuSparkles, LuUsers } from 'react-icons/lu';
+import { BootcampCard } from '../components/rows';
+import { ProgressHeader } from '../components/learn/ProgressHeader';
+import { TrackMiniTrail } from '../components/learn/SkillTrail';
+import { PASS_MARK, TRACKS } from '../data/academy';
 import { BOOTCAMPS } from '../data/bootcamps';
-import { PASS_MARK, TRACKS, lessonById, trackById } from '../data/academy';
 import { useApp } from '../lib/app';
-import { lessonKey, repo } from '../lib/repo';
-import { Link, useNavigate, useParams } from '../lib/router';
-import type { QuizQuestion, Track } from '../lib/types';
-import { NotFound } from './NotFound';
+import { learnStats, nextLesson, trackComplete, trackDone, trackXpTotal } from '../lib/learn';
+import { Link, useQueryState } from '../lib/router';
+import type { Track } from '../lib/types';
 
-function useTrackProgress(track: Track) {
+const TABS = [
+  { id: 'courses', label: 'Free courses' },
+  { id: 'bootcamps', label: 'Live bootcamps' },
+  { id: 'tools', label: 'Guide & tools' },
+] as const;
+
+type TabId = (typeof TABS)[number]['id'];
+
+const TOOL_LINKS = [
+  { to: '/tools/question-builder', title: 'Research question builder', text: 'Turn a topic into a question with a population, a comparison and a finish line.' },
+  { to: '/tools/sample-size', title: 'Sample size calculator', text: 'Work out how many responses you need, with non-response built in.' },
+  { to: '/tools/consent-form', title: 'Consent form builder', text: 'Draft a plain-language consent form, including a guardian section.' },
+  { to: '/tools/citation', title: 'Citation builder', text: 'Format references in APA, MLA, Chicago, Harvard and IEEE.' },
+  { to: '/tools/legit-check', title: 'Legit Check', text: 'Screen a journal or conference invitation for predatory-publishing signs.' },
+  { to: '/tools/outreach', title: 'Outreach email composer', text: 'Write a short, specific email to a researcher that gets read.' },
+];
+
+function TrackCard({ track, index }: { track: Track; index: number }) {
   const { progress } = useApp();
-  const done = track.lessons.filter((l) => progress[lessonKey(track.id, l.id)]).length;
-  return { done, total: track.lessons.length, pct: Math.round((done / track.lessons.length) * 100) };
-}
-
-function TrackCard({ track }: { track: Track }) {
-  const { done, total, pct } = useTrackProgress(track);
+  const done = trackDone(track, progress);
+  const complete = trackComplete(track, progress);
+  const pct = Math.round((done / track.lessons.length) * 100);
   const minutes = track.lessons.reduce((n, l) => n + l.minutes, 0);
   return (
-    <Link to={`/learn/${track.id}`} className="card card-link track-card" style={{ gap: 12 }}>
-      <div className="cluster" style={{ ['--gap' as any]: '8px' }}>
+    <Link to={`/learn/${track.id}`} className={`card card-link track-card${complete ? ' is-complete' : ''}`}>
+      <div className="track-card-top">
+        <span className="track-number">Track {index + 1}</span>
         <span className={`pill ${track.level === 'Beginner' ? 'pill-mark' : 'pill-neutral'}`}>{track.level}</span>
-        <span className="small muted">
-          {total} lessons, about {minutes} min
-        </span>
+        {complete && (
+          <span className="pill pill-open">
+            <LuAward aria-hidden="true" /> Badge earned
+          </span>
+        )}
       </div>
-      <h3 style={{ fontSize: 'var(--t-xl)' }}>{track.title}</h3>
+      <h3>{track.title}</h3>
       <p className="small muted">{track.summary}</p>
-      <p className="xsmall faint">For: {track.audience}</p>
+      <TrackMiniTrail track={track} />
+      <div className="track-skills">
+        {track.skills.map((s) => (
+          <span key={s} className="trail-skill">
+            {s}
+          </span>
+        ))}
+      </div>
       <div className="progress">
         <div className="progress-bar" aria-hidden="true">
           <b style={{ width: `${pct}%` }} />
         </div>
-        <span>{done === 0 ? 'Not started' : done === total ? 'Complete' : `${done} of ${total} done`}</span>
+        <span>
+          {done === 0 ? `${track.lessons.length} steps · ${minutes} min · ${trackXpTotal(track)} XP` : `${done} of ${track.lessons.length} steps · ${minutes} min`}
+        </span>
       </div>
     </Link>
   );
 }
 
-export function Learn() {
-  const { user, profile } = useApp();
-  const level = profile?.level;
-  const start = level === 'masters' || level === 'phd' ? 'methods' : 'foundations';
+function CoursesTab() {
   return (
-    <div className="wrap page">
-      <PageHead
-        title="The Thesia Academy"
-        lede="Short, free lessons on how research actually works, from your first question to your first paper. Each ends with a quick check of what you learned."
-      >
-        <div className="cluster">
-          <Link to={`/learn/${start}`} className="btn btn-primary">
-            {level ? 'Start where you are' : 'Start with the basics'}
-          </Link>
-          {!user && <span className="small muted">Sign in to save progress and earn a verifiable certificate for each track.</span>}
-        </div>
-      </PageHead>
-      <div className="grid" style={{ ['--min' as any]: '320px', marginBottom: 56 }}>
-        {TRACKS.map((t) => (
-          <TrackCard key={t.id} track={t} />
+    <div className="hub-panel stack" style={{ ['--gap' as any]: '40px' }}>
+      <div className="track-banner">
+        <LuBadgeCheck aria-hidden="true" />
+        <p>
+          Finishing a track counts towards selection for paid company projects. Complete all four core tracks to reach{' '}
+          <strong>Pilot Ready</strong>.
+        </p>
+        <Link to="/projects" className="small">
+          See open projects
+        </Link>
+      </div>
+      <div className="grid" style={{ ['--min' as any]: '320px' }}>
+        {TRACKS.map((t, i) => (
+          <TrackCard key={t.id} track={t} index={i} />
         ))}
       </div>
-      <section className="stack" style={{ maxWidth: 820 }}>
-        <h2 style={{ fontSize: 'var(--t-xl)' }}>Not sure where to begin?</h2>
-        <div className="table-wrap">
-          <table className="data">
-            <thead>
-              <tr>
-                <th>If you are…</th>
-                <th>Start with</th>
-                <th>Then</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>In school (O/A Level, Matric, FSc)</td>
-                <td>
-                  <Link to="/learn/foundations">Research foundations</Link>
-                </td>
-                <td>Join a high-school friendly project</td>
-              </tr>
-              <tr>
-                <td>An undergraduate, new to research</td>
-                <td>
-                  <Link to="/learn/foundations">Research foundations</Link>
-                </td>
-                <td>
-                  <Link to="/learn/getting-in">Getting into research</Link>
-                </td>
-              </tr>
-              <tr>
-                <td>Writing a thesis or final-year project</td>
-                <td>
-                  <Link to="/learn/methods">Methods and analysis</Link>
-                </td>
-                <td>
-                  <Link to="/learn/publishing">Publishing and presenting</Link>
-                </td>
-              </tr>
-              <tr>
-                <td>A master’s student or junior researcher</td>
-                <td>
-                  <Link to="/learn/publishing">Publishing and presenting</Link>
-                </td>
-                <td>
-                  <Link to="/bootcamps/systematic-review">Systematic reviews bootcamp</Link>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+      <section className="stack" style={{ ['--gap' as any]: '18px' }}>
+        <div className="section-head">
+          <div>
+            <span className="xsmall caps faint">How a lesson works</span>
+            <h2>Four steps, one small win at a time</h2>
+          </div>
         </div>
-        <p className="small muted">
-          Want live teaching and feedback? The free <Link to={`/bootcamps/${BOOTCAMPS[0].id}`}>{BOOTCAMPS[0].title}</Link> bootcamp starts soon.
-        </p>
+        <div className="steps lesson-method">
+          <div className="step">
+            <span className="step-num">
+              <LuFileText aria-hidden="true" />
+            </span>
+            <h3>Concept</h3>
+            <p>The idea in plain English, with the decision it helps you make.</p>
+          </div>
+          <div className="step">
+            <span className="step-num">
+              <LuBadgeCheck aria-hidden="true" />
+            </span>
+            <h3>Professor's field rule</h3>
+            <p>One rule researchers actually use to catch mistakes before they cost time.</p>
+          </div>
+          <div className="step">
+            <span className="step-num">
+              <LuSearch aria-hidden="true" />
+            </span>
+            <h3>Real example</h3>
+            <p>A concrete project situation, what went wrong and the fix.</p>
+          </div>
+          <div className="step">
+            <span className="step-num">
+              <LuClipboardList aria-hidden="true" />
+            </span>
+            <h3>Check</h3>
+            <p>A hands-on exercise, a short quiz and instant explanations. Pass 50% to earn XP.</p>
+          </div>
+        </div>
+      </section>
+      <section className="learn-note-panel">
+        <div className="cluster" style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div className="stack" style={{ ['--gap' as any]: '6px' }}>
+            <h3>New to applied research?</h3>
+            <p className="small muted">
+              Start with Scoping. It gives you the one-page brief and the literature matrix that every later track builds on.
+            </p>
+          </div>
+          <Link to={`/learn/${TRACKS[0].id}/${TRACKS[0].lessons[0].id}`} className="btn btn-secondary">
+            Open the first lesson
+          </Link>
+        </div>
       </section>
     </div>
   );
 }
 
-export function TrackPage() {
-  const { track: trackId } = useParams();
-  const track = trackById(trackId);
+function BootcampsTab() {
+  return (
+    <div className="hub-panel stack" style={{ ['--gap' as any]: '24px' }}>
+      <div className="section-head">
+        <div>
+          <span className="xsmall caps faint">Live cohorts</span>
+          <h2>Learn with a mentor and a deadline</h2>
+          <p className="muted small">
+            Free courses are self-paced. Bootcamps add live sessions, feedback on your work and a finished deliverable. Prices are adjusted for your country.
+          </p>
+        </div>
+        <Link to="/bootcamps" className="btn btn-secondary">
+          Compare all bootcamps
+        </Link>
+      </div>
+      <div className="grid" style={{ ['--min' as any]: '320px' }}>
+        {BOOTCAMPS.map((b) => (
+          <BootcampCard key={b.id} b={b} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ToolsTab() {
+  return (
+    <div className="hub-panel stack" style={{ ['--gap' as any]: '28px' }}>
+      <div className="guide-feature">
+        <div className="guide-feature-icon">
+          <LuSparkles aria-hidden="true" />
+        </div>
+        <div className="stack" style={{ ['--gap' as any]: '8px' }}>
+          <span className="xsmall caps faint">AI research guide</span>
+          <h2>Ask a methods question in plain English</h2>
+          <p className="small muted">
+            Get a short answer with the next step and the lesson or tool that goes deeper. Useful when you are stuck at 11pm and your supervisor is asleep.
+          </p>
+        </div>
+        <Link to="/guide" className="btn btn-primary">
+          Ask the guide <LuArrowRight aria-hidden="true" />
+        </Link>
+      </div>
+      <div className="stack" style={{ ['--gap' as any]: '14px' }}>
+        <div className="section-head">
+          <div>
+            <span className="xsmall caps faint">Six tools</span>
+            <h2>Do the task, not just read about it</h2>
+          </div>
+          <Link to="/tools" className="small">
+            All tools
+          </Link>
+        </div>
+        <div className="grid" style={{ ['--min' as any]: '280px' }}>
+          {TOOL_LINKS.map((t) => (
+            <Link key={t.to} to={t.to} className="card card-link tool-link">
+              <h3>{t.title}</h3>
+              <p className="small muted">{t.text}</p>
+              <span className="small tool-link-arrow">
+                Open <LuArrowRight aria-hidden="true" />
+              </span>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function Learn() {
   const { progress } = useApp();
-  if (!track) return <NotFound />;
-  return <TrackView track={track} progress={progress} />;
-}
+  const [params, setParams] = useQueryState();
+  const requested = params.get('tab');
+  const tab: TabId = TABS.some((t) => t.id === requested) ? (requested as TabId) : 'courses';
+  const stats = useMemo(() => learnStats(progress), [progress]);
+  const activeTrack = TRACKS.find((t) => !trackComplete(t, progress)) ?? TRACKS[0];
+  const next = nextLesson(activeTrack, progress);
+  const startPath = `/learn/${activeTrack.id}/${next?.lesson.id ?? activeTrack.lessons[0].id}`;
+  const cta = stats.lessonsDone === 0 ? 'Start the curriculum' : stats.pilotReady ? 'Review a track' : 'Continue where you left off';
 
-function TrackView({ track, progress }: { track: Track; progress: Record<string, unknown> }) {
-  const { done, total, pct } = useTrackProgress(track);
-  const { user, toast } = useApp();
-  const navigate = useNavigate();
-  const [claiming, setClaiming] = useState(false);
-  const next = track.lessons.find((l) => !progress[lessonKey(track.id, l.id)]) || track.lessons[0];
-  const openCertificate = async () => {
-    if (!user) return;
-    setClaiming(true);
-    try {
-      navigate(`/certificate/${await repo.claimTrackCertificate(user.id, track.id)}`);
-    } catch (e: any) {
-      const m = String(e?.message || '');
-      toast(/incomplete|Finish/.test(m) ? `Each lesson needs at least ${PASS_MARK}% on its quiz before the certificate is issued.` : `Couldn’t open your certificate: ${m || 'network error'}`);
-    } finally {
-      setClaiming(false);
-    }
-  };
   return (
-    <div className="wrap wrap-narrow page">
-      <PageHead crumbs={[{ to: '/learn', label: 'Academy' }]} title={track.title} lede={track.summary}>
-        <div className="cluster">
-          <Link to={`/learn/${track.id}/${next.id}`} className="btn btn-primary">
-            {done === 0 ? 'Start the track' : done === total ? 'Review from the start' : 'Continue'}
-          </Link>
-          {user && done === total && (
-            <button type="button" className="btn btn-mark" onClick={openCertificate} disabled={claiming}>
-              {claiming ? 'Opening…' : 'View your certificate'}
-            </button>
-          )}
-          <span className="small muted">
-            {track.level}. For {track.audience.toLowerCase()}.
+    <div className="wrap page learn-hub">
+      <header className="learn-hero">
+        <div className="learn-hero-copy">
+          <span className="eyebrow">
+            <LuGraduationCap aria-hidden="true" /> Thesia Learn · free and gamified
           </span>
+          <h1>Learn applied research by doing it</h1>
+          <p className="lede">
+            Four tracks take you from a company question to a signed-off report: scope the evidence, collect data properly,
+            analyse it honestly and write something a manager can act on.
+          </p>
+          <div className="cluster learn-hero-actions">
+            <Link to={startPath} className="btn btn-primary">
+              {cta}
+            </Link>
+            <Link to="/projects" className="btn btn-secondary">
+              See paid projects
+            </Link>
+          </div>
+          <p className="xsmall faint">
+            No account needed to start. A quiz at the end of every lesson, XP for passing, and a badge for every track.
+          </p>
         </div>
-        <div className="progress" style={{ maxWidth: 360 }}>
-          <div className="progress-bar">
-            <b style={{ width: `${pct}%` }} />
+        <ProgressHeader />
+      </header>
+
+      <div className="hub-tabs" role="tablist" aria-label="Learn hub sections">
+        {TABS.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            role="tab"
+            aria-selected={tab === t.id}
+            className={`hub-tab${tab === t.id ? ' is-active' : ''}`}
+            onClick={() => setParams({ tab: t.id === 'courses' ? null : t.id })}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      <div role="tabpanel" aria-label={TABS.find((t) => t.id === tab)?.label}>
+        {tab === 'courses' && <CoursesTab />}
+        {tab === 'bootcamps' && <BootcampsTab />}
+        {tab === 'tools' && <ToolsTab />}
+      </div>
+
+      <section className="learn-proof">
+        <div className="learn-proof-item">
+          <LuBookOpen aria-hidden="true" />
+          <div>
+            <strong>{stats.lessonsTotal} lessons, {TRACKS.length} tracks</strong>
+            <p className="xsmall muted">Written as a pre-project curriculum, not a reading list.</p>
           </div>
-          <span>
-            {done} of {total} lessons complete{done === total ? '. Badge and certificate earned.' : '. Finish them all for a verifiable certificate.'}
-          </span>
         </div>
-      </PageHead>
-      <ol className="lesson-list">
-        {track.lessons.map((l, i) => {
-          const isDone = !!progress[lessonKey(track.id, l.id)];
-          return (
-            <li key={l.id}>
-              <Link to={`/learn/${track.id}/${l.id}`}>
-                <span className="lesson-num">{i + 1}</span>
-                <span className="min0">
-                  <strong>{l.title}</strong>
-                  <span className="small muted" style={{ display: 'block' }}>
-                    {l.summary}
-                  </span>
-                </span>
-                <span className="small faint" style={{ display: 'inline-flex', gap: 8, alignItems: 'center' }}>
-                  {l.minutes} min
-                  {isDone && (
-                    <span className="done-mark" aria-label="Completed">
-                      <LuCircleCheck />
-                    </span>
-                  )}
-                </span>
-              </Link>
-            </li>
-          );
-        })}
-      </ol>
-    </div>
-  );
-}
-
-export function LessonPage() {
-  const { track: trackId, lesson: lessonId } = useParams();
-  const found = lessonById(trackId, lessonId);
-  if (!found) return <NotFound />;
-  return <LessonView key={`${trackId}/${lessonId}`} {...found} />;
-}
-
-function LessonView({ track, lesson, index }: { track: Track; lesson: Track['lessons'][number]; index: number }) {
-  const { user, progress, completeLesson, toast, requireAuth } = useApp();
-  const navigate = useNavigate();
-  const [answers, setAnswers] = useState<(number | null)[]>(() => lesson.quiz.map(() => null));
-  const key = lessonKey(track.id, lesson.id);
-  const done = !!progress[key];
-  const next = track.lessons[index + 1];
-  const prev = track.lessons[index - 1];
-  const allAnswered = answers.every((a) => a !== null);
-  const score = useMemo(() => Math.round((answers.filter((a, i) => a === lesson.quiz[i].answer).length / lesson.quiz.length) * 100), [answers, lesson.quiz]);
-  const passed = allAnswered && score >= PASS_MARK;
-
-  const complete = async () => {
-    if (!requireAuth('progress')) return;
-    const certId = await completeLesson(track.id, lesson.id, score);
-    if (certId) {
-      toast(`Track complete: ${track.title}. Your certificate is ready.`);
-      navigate(`/certificate/${certId}`);
-      return;
-    }
-    toast('Lesson complete');
-    if (next) navigate(`/learn/${track.id}/${next.id}`);
-  };
-
-  return (
-    <div className="wrap page">
-      <nav className="crumbs" aria-label="Breadcrumb" style={{ marginBottom: 20 }}>
-        <Link to="/learn">Academy</Link> /<Link to={`/learn/${track.id}`}>{track.title}</Link>
-      </nav>
-      <div className="notebook">
-        <article className="notebook-page stack" style={{ ['--gap' as any]: '28px' }}>
-          <header className="stack" style={{ ['--gap' as any]: '12px', maxWidth: 'var(--measure)' }}>
-            <span className="small faint">
-              Lesson {index + 1} of {track.lessons.length}, {lesson.minutes} min read
-            </span>
-            <h1 style={{ fontSize: 'clamp(2rem, 4.2vw, 2.75rem)' }}>{lesson.title}</h1>
-            <p className="lede">{lesson.summary}</p>
-          </header>
-          <Markdown source={lesson.body} />
-          {lesson.tool && (
-            <p className="callout" style={{ maxWidth: 'var(--measure)' }}>
-              Try it: the matching <Link to={lesson.tool}>Thesia tool</Link> walks you through this step by step.
-            </p>
-          )}
-          <section className="stack" aria-labelledby="quiz-h" style={{ maxWidth: 'var(--measure)' }}>
-            <h2 id="quiz-h" style={{ fontSize: 'var(--t-xl)' }}>
-              Check your understanding
-            </h2>
-            <div className="quiz">
-              {lesson.quiz.map((q, i) => (
-                <QuizItem key={i} q={q} n={i + 1} value={answers[i]} onAnswer={(v) => setAnswers((a) => a.map((x, j) => (j === i ? v : x)))} />
-              ))}
-            </div>
-            <div className="cluster" style={{ marginTop: 8 }}>
-              {done ? (
-                <span className="pill pill-open">
-                  <LuCircleCheck /> Completed
-                </span>
-              ) : (
-                <button className="btn btn-primary" disabled={!passed} onClick={complete} title={passed ? undefined : allAnswered ? `Get at least ${PASS_MARK}% right to complete the lesson` : 'Answer every question first'}>
-                  Mark lesson complete
-                </button>
-              )}
-              {allAnswered && passed && <span className="small muted">You got {score}% right.{score < 100 ? ' Read the explanations, then carry on.' : ''}</span>}
-              {allAnswered && !passed && !done && (
-                <>
-                  <span className="small muted">
-                    You got {score}% right. You need at least {PASS_MARK}% for the lesson to count. Read the explanations, then try again.
-                  </span>
-                  <button type="button" className="btn btn-secondary btn-sm" onClick={() => setAnswers(lesson.quiz.map(() => null))}>
-                    Try the quiz again
-                  </button>
-                </>
-              )}
-              {!user && !done && <span className="small faint">Sign in to save your progress.</span>}
-            </div>
-          </section>
-          <nav className="cluster" style={{ justifyContent: 'space-between', borderTop: '1px solid var(--rule)', paddingTop: 20, maxWidth: 'var(--measure)' }} aria-label="Lesson navigation">
-            {prev ? (
-              <Link to={`/learn/${track.id}/${prev.id}`} className="btn btn-ghost btn-wrap">
-                Previous: {prev.title}
-              </Link>
-            ) : (
-              <span />
-            )}
-            {next ? (
-              <Link to={`/learn/${track.id}/${next.id}`} className="btn btn-secondary btn-wrap">
-                Next: {next.title}
-              </Link>
-            ) : (
-              <Link to="/learn" className="btn btn-secondary">
-                Back to the Academy
-              </Link>
-            )}
-          </nav>
-        </article>
-        <aside className="margin-notes" aria-label="Margin notes">
-          <div className="panel stack" style={{ ['--gap' as any]: '10px' }}>
-            <h3 style={{ fontSize: 'var(--t-md)', fontFamily: 'var(--font-body)' }}>Key points</h3>
-            <ul className="checklist">
-              {lesson.takeaways.map((t) => (
-                <li key={t}>
-                  <span className="ok" aria-hidden="true">
-                    <LuCircleCheck />
-                  </span>
-                  <span>{t}</span>
-                </li>
-              ))}
-            </ul>
+        <div className="learn-proof-item">
+          <LuChartLine aria-hidden="true" />
+          <div>
+            <strong>XP from evidence of learning</strong>
+            <p className="xsmall muted">Pass the quiz at {PASS_MARK}% or more; accuracy adds bonus XP.</p>
           </div>
-          <div className="stack" style={{ ['--gap' as any]: '6px' }}>
-            <h3 style={{ fontSize: 'var(--t-sm)', fontFamily: 'var(--font-body)' }}>In this track</h3>
-            <ol style={{ margin: 0, paddingLeft: '1.3em', display: 'grid', gap: 6 }} className="small">
-              {track.lessons.map((l) => (
-                <li key={l.id} style={{ color: l.id === lesson.id ? 'var(--ink)' : 'var(--ink-2)' }}>
-                  {l.id === lesson.id ? <strong>{l.title}</strong> : <Link to={`/learn/${track.id}/${l.id}`}>{l.title}</Link>}
-                  {progress[lessonKey(track.id, l.id)] ? <span className="done-mark" style={{ marginLeft: 6, verticalAlign: '-4px' }} aria-label="Completed"><LuCircleCheck /></span> : null}
-                </li>
-              ))}
-            </ol>
+        </div>
+        <div className="learn-proof-item">
+          <LuUsers aria-hidden="true" />
+          <div>
+            <strong>Built for company projects</strong>
+            <p className="xsmall muted">Templates you can take straight into a supervised student team.</p>
           </div>
-          <Link to={`/guide?q=${encodeURIComponent('I have a question about ' + lesson.title.toLowerCase())}`} className="btn btn-secondary">
-            Ask the guide about this
-          </Link>
-        </aside>
-      </div>
+        </div>
+      </section>
     </div>
   );
 }
-
-function QuizItem({ q, n, value, onAnswer }: { q: QuizQuestion; n: number; value: number | null; onAnswer: (v: number) => void }) {
-  const answered = value !== null;
-  return (
-    <div className="quiz-q">
-      <h4>
-        {n}. {q.q}
-      </h4>
-      <div className="stack" style={{ ['--gap' as any]: '8px' }} role="group" aria-label={`Question ${n}`}>
-        {q.options.map((o, i) => {
-          const cls = answered ? (i === q.answer ? ' is-right' : i === value ? ' is-wrong' : '') : '';
-          return (
-            <button key={i} type="button" className={`quiz-option${cls}`} disabled={answered} onClick={() => onAnswer(i)} aria-pressed={value === i}>
-              <span className="letter">{String.fromCharCode(65 + i)}</span>
-              <span>{o}</span>
-            </button>
-          );
-        })}
-      </div>
-      {answered && (
-        <p className="quiz-why" role="status">
-          <strong>{value === q.answer ? 'Right.' : 'Not quite.'}</strong> {q.why}
-        </p>
-      )}
-    </div>
-  );
-}
-

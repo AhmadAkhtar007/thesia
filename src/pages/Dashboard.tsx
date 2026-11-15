@@ -67,7 +67,7 @@ export function Dashboard() {
   const lessonsDone = Object.keys(progress).length;
   const steps = [
     { done: !!profile?.onboarded, title: 'Set up your research passport', to: '/welcome', cta: 'Set up' },
-    { done: lessonsDone > 0, title: 'Finish your first Academy lesson', to: '/learn/foundations/what-is-research', cta: 'Start' },
+    { done: lessonsDone > 0, title: 'Finish your first applied research lesson', to: '/learn/scoping/company-question', cta: 'Start' },
     { done: apps.length > 0, title: 'Apply to a project role', to: '/projects', cta: 'Browse' },
     { done: saved.some((s) => s.kind === 'conference'), title: 'Save a conference to track its deadline', to: '/conferences', cta: 'Find one' },
     { done: enrollments.length > 0, title: 'Reserve a seat in a bootcamp', to: '/bootcamps', cta: 'See cohorts' },

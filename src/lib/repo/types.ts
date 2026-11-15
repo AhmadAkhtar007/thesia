@@ -7,6 +7,7 @@ import type {
   CreditRole,
   Enrollment,
   EnrollmentStatus,
+  LessonProgress,
   Message,
   Notice,
   Organization,
@@ -140,7 +141,9 @@ export interface Repo {
   listSaved(userId: string): Promise<SavedItem[]>;
   toggleSaved(userId: string, kind: SavedKind, refId: string): Promise<boolean>;
 
-  getProgress(userId: string): Promise<Record<string, { completedAt: string; score: number }>>;
+  /** One row per lesson from public.lesson_progress, keyed by "trackId/lessonId". */
+  getProgress(userId: string): Promise<Record<string, LessonProgress>>;
+  /** Records completion and the quiz score, keeping the best score on a retake. */
   completeLesson(userId: string, trackId: string, lessonId: string, score: number): Promise<void>;
 
   claimTrackCertificate(userId: string, trackId: string): Promise<string>;

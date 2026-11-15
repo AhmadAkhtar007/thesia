@@ -158,7 +158,7 @@ export function QuestionBuilder() {
             )}
           </div>
           <p className="small muted">
-            Learn more in <Link to="/learn/foundations/research-question">From curiosity to a research question</Link>.
+            Learn more in <Link to="/learn/scoping/company-question">Turn a company question into a research question</Link>.
           </p>
         </div>
       </div>

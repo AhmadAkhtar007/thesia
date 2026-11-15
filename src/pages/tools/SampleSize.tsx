@@ -156,7 +156,7 @@ export function SampleSize() {
           )}
           <p className="small muted">
             Comparing groups or testing a hypothesis needs a power calculation instead. For interviews, plan for saturation, often 12 to 30 for a focused question. See{' '}
-            <Link to="/learn/methods/sampling">Sampling and sample size</Link>.
+            <Link to="/learn/fieldwork/sampling">Sampling and sample size without guesswork</Link>.
           </p>
         </div>
       </div>

@@ -151,15 +151,15 @@ export function coachAnswer(question: string, ctx: Ctx): string {
   const parts: string[] = [];
 
   const intents: [RegExp, string][] = [
-    [/predatory|fake (journal|conference)|legit|scam|hijack/, 'Run any journal or conference invitation through [Legit Check](/tools/legit-check), and read [Choosing a journal or conference](/learn/publishing/choosing-a-venue).'],
-    [/email|professor|supervisor|reach out|contact|cold/, 'For writing to a researcher, use the [Outreach email composer](/tools/outreach) and read [Writing to a researcher](/learn/getting-in/emailing-researchers). Mention one specific paper of theirs and make one small ask.'],
+    [/predatory|fake (journal|conference)|legit|scam|hijack/, 'Run any journal or conference invitation through [Legit Check](/tools/legit-check) before you pay or submit. It screens for the warning signs of predatory publishing.'],
+    [/email|professor|supervisor|reach out|contact|cold/, 'For writing to a researcher, use the [Outreach email composer](/tools/outreach). Mention one specific paper of theirs and make one small ask.'],
     [/sample size|how many (people|respondents|participants)/, 'The [Sample size calculator](/tools/sample-size) works out how many responses you need. At 95% confidence and ±5%, a proportion needs about 385 completed responses before corrections.'],
-    [/consent|ethic|irb|erc|minor|under 18/, 'Before collecting any data from people, get ethics approval and informed consent. The [Consent form builder](/tools/consent-form) drafts one, and [Research ethics and informed consent](/learn/foundations/ethics-basics) explains the rules.'],
+    [/consent|ethic|irb|erc|minor|under 18/, 'Before collecting any data from people, get ethics approval and informed consent. The [Consent form builder](/tools/consent-form) drafts one, and [Run fieldwork ethically and safely](/learn/fieldwork/fieldwork-ethics) explains the rules.'],
     [/cite|citation|reference|apa|mla|harvard/, 'The [Citation builder](/tools/citation) formats references in APA, MLA, Chicago and IEEE. Check every reference against the original source.'],
-    [/publish|journal|paper|submit/, 'For publishing, start with [Writing up with IMRaD](/learn/publishing/imrad) and consider the [From Project to Paper](/bootcamps/project-to-paper) bootcamp.'],
-    [/phd|master|ms |mphil|scholarship|fellowship|abroad|fulbright|chevening/, 'For graduate study and funding, read [Planning for a research master’s or PhD](/learn/getting-in/graduate-study) and browse [fellowships and programmes](/opportunities).'],
-    [/conference|present|poster/, 'See verified [conferences in Pakistan](/conferences), and read [Posters, talks and conference networking](/learn/publishing/posters-and-talks).'],
-    [/start|beginner|first time|no experience|how do i (begin|get started)|new to research/, 'If you are new, the free [Research Launchpad](/bootcamps/research-launchpad) bootcamp takes you from idea to one-page proposal in three weeks, and [Research foundations](/learn/foundations) is free any time.'],
+    [/publish|journal|paper|submit/, 'For writing up, start with [Structure a report a manager can act on](/learn/reporting/report-structure) and consider the [From Project to Paper](/bootcamps/project-to-paper) bootcamp.'],
+    [/phd|master|ms |mphil|scholarship|fellowship|abroad|fulbright|chevening/, 'Browse [fellowships and programmes](/opportunities) for graduate study and funding, and check each official page for eligibility.'],
+    [/conference|present|poster/, 'See verified [conferences in Pakistan](/conferences) with deadlines and student-friendly formats.'],
+    [/start|beginner|first time|no experience|how do i (begin|get started)|new to research/, 'If you are new, the free [Research Launchpad](/bootcamps/research-launchpad) bootcamp takes you from idea to one-page proposal in three weeks, and the free [applied research curriculum](/learn) is open any time.'],
   ];
   for (const [re, text] of intents) if (re.test(q)) parts.push(text);
   const matchedIntent = parts.length > 0;
