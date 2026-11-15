@@ -13,7 +13,6 @@ import { SignIn, SignUp, Welcome } from './pages/Auth';
 import { BootcampDetail, Bootcamps } from './pages/Bootcamps';
 import { Conferences } from './pages/Conferences';
 import { Dashboard } from './pages/Dashboard';
-import { Faculty } from './pages/Faculty';
 import { Guide } from './pages/Guide';
 import { Home } from './pages/Home';
 import { Impact } from './pages/Impact';
@@ -74,9 +73,6 @@ const routes: RouteDef[] = [
   { path: '/pricing', element: <Pricing /> },
   { path: '/institutions', element: <Institutions /> },
   { path: '/impact', element: <Impact /> },
-  { path: '/faculty', element: <Faculty /> },
-  { path: '/faculty/:section', element: <Faculty /> },
-  { path: '/faculty/:section/:id', element: <Faculty /> },
   { path: '/signin', element: <SignIn /> },
   { path: '/signup', element: <SignUp /> },
   { path: '/welcome', element: <Welcome /> },
