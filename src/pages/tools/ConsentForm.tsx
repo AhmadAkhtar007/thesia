@@ -181,7 +181,7 @@ export function ConsentForm() {
           </div>
           <p className="small muted">
             Translate it into the language participants speak best, using forward and back translation, and read it aloud for anyone who can’t read it. See{' '}
-            <Link to="/learn/foundations/ethics-basics">Research ethics and informed consent</Link>.
+            <Link to="/learn/fieldwork/fieldwork-ethics">Run fieldwork ethically and safely</Link>.
           </p>
         </div>
       </div>
