@@ -31,11 +31,13 @@ const target = (args.find((a) => a.startsWith('--target=')) || '--target=web').s
 
 function loadEnv() {
   const env = { ...process.env };
-  const file = path.join(root, '.env');
-  if (fs.existsSync(file)) {
-    for (const line of fs.readFileSync(file, 'utf8').split('\n')) {
-      const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/);
-      if (m && env[m[1]] === undefined) env[m[1]] = m[2].replace(/^['"]|['"]$/g, '');
+  for (const f of ['.env', '.env.local']) {
+    const file = path.join(root, f);
+    if (fs.existsSync(file)) {
+      for (const line of fs.readFileSync(file, 'utf8').split('\n')) {
+        const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/);
+        if (m) env[m[1]] = m[2].replace(/^['"]|['"]$/g, '');
+      }
     }
   }
   return env;
@@ -83,6 +85,11 @@ const buildOptions = {
     __TARGET__: JSON.stringify(target),
     __SUPABASE_URL__: JSON.stringify(supabaseUrl),
     __SUPABASE_ANON_KEY__: JSON.stringify(supabaseKey),
+    __NEON_DATABASE_URL__: JSON.stringify(target === 'artifact' ? '' : (env.DATABASE_URL || '')),
+    __NEON_AUTH_BASE_URL__: JSON.stringify(target === 'artifact' ? '' : (env.NEON_AUTH_BASE_URL || '')),
+    __NEON_REALTIME_URL__: JSON.stringify(target === 'artifact' ? '' : (env.NEON_REALTIME_URL || '')),
+    __NEON_FUNCTION_URL__: JSON.stringify(target === 'artifact' ? '' : (env.NEON_FUNCTION_HOST_SUFFIX ? `https://${env.NEON_BRANCH_ID}-hello${env.NEON_FUNCTION_HOST_SUFFIX}` : '')),
+    __NEON_AI_GATEWAY_BASE_URL__: JSON.stringify(target === 'artifact' ? '' : (env.NEON_AI_GATEWAY_BASE_URL || '')),
     __CHECKOUT_URLS__: JSON.stringify(checkoutUrls),
     __SITE_URL__: JSON.stringify(env.THESIA_SITE_URL || ''),
     'process.env.NODE_ENV': JSON.stringify(serve ? 'development' : 'production'),
@@ -201,7 +208,7 @@ async function buildOnce() {
   writeSeoFiles(outDir, routes, shell);
   console.log(
     `Web build: dist/ (js ${(js.length / 1024).toFixed(0)} KB, css ${(css.length / 1024).toFixed(0)} KB, ${routes.length} prerendered pages, mode: ${
-      supabaseUrl ? 'live (Supabase)' : 'demo'
+      env.DATABASE_URL ? 'live (Neon Postgres)' : supabaseUrl ? 'live (Supabase)' : 'demo'
     })`
   );
 }

@@ -11,12 +11,19 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@neon/auth": "^0.8.2",
+    "@neon/config": "^1.14.2",
+    "@neon/env": "^2.1.5",
+    "@neondatabase/serverless": "^1.2.1",
+    "dotenv": "^18.0.10",
     "marked": "18.0.10",
+    "pg": "^8.23.1",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "react-icons": "5.7.0"
   },
   "devDependencies": {
+    "@types/pg": "^8.23.1",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "esbuild": "0.28.2",

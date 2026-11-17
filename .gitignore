@@ -5,3 +5,5 @@ dist-artifact
 .env
 .DS_Store
 *.log
+.neon
+.env.local
