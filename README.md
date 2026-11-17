@@ -43,16 +43,25 @@ Requires Node 20+. The build uses esbuild directly (`scripts/build.mjs`); there 
 
 ### Demo mode vs live mode
 
-Without Supabase settings the app runs in **demo mode**: sample projects and profiles, and everything a visitor does is stored in their browser. With `THESIA_SUPABASE_URL` and `THESIA_SUPABASE_ANON_KEY` set at build time it runs in **live mode** against Supabase. All data access goes through one interface (`src/lib/repo/types.ts`) with two implementations (`local.ts`, `remote.ts`).
+Without Neon settings the app runs in **demo mode**: sample projects and profiles, and everything a visitor does is stored in their browser. With `DATABASE_URL` (or `.env.local` pulled from Neon) set at build time, it runs in **live mode** against **Neon Serverless Postgres** and **Neon Auth**. All data access goes through one interface (`src/lib/repo/types.ts`) with two implementations (`local.ts`, `remote.ts`).
 
-## Set up the live backend
+## Set up the live backend (Neon)
 
-Full steps are in [`docs/SETUP.md`](docs/SETUP.md). In short:
+The project uses the **Neon Serverless Stack** (Postgres, Auth, Functions, Realtime, and AI Gateway):
 
-1. Run `supabase/setup.sql` in the Supabase SQL editor (project `fntkopybcfxjbshmykln`). It is `0001_thesia_core.sql`, `0002_platform.sql` and `seed.sql` in that order; you can also run the three files one by one in that order.
-2. Copy `.env.example` to `.env` and fill in the anon key and site URL; add the same variables in Vercel.
-3. Deploy the Edge Functions and set their secrets (`ANTHROPIC_API_KEY`, `LEMON_SIGNING_SECRET`).
-4. In Supabase Auth, set the Site URL and redirect URL to your domain + `/welcome`, and enable Google if wanted.
+1. **Link and Provision with Neon CLI:**
+   ```bash
+   neon init -y --branch production --services postgres,auth,ai-gateway,functions,realtime
+   neon deploy
+   ```
+2. **Apply Database Schema & Seed Data:**
+   ```bash
+   node scripts/migrate-neon.mjs
+   ```
+3. **Run in Live Mode:**
+   ```bash
+   npm run dev
+   ```
 
 ## Code map
 
