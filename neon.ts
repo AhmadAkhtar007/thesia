@@ -6,10 +6,6 @@ export default defineConfig({
   },
   auth: true,
   aiGateway: true,
-  functions: {
-    hello: { name: "Hello World", source: "./hello.ts" },
-  },
-  // Branch policy: per-branch tuning
   branch: (branch) => {
     if (branch.isDefault) {
       return {};

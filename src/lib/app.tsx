@@ -5,7 +5,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { ReactNode } from 'react';
 import { LIVE } from './config';
 import { repo, lessonKey, type SavedItem, type SavedKind } from './repo';
-import { auth as sbAuth, onAuthChange } from './supabase';
+import { auth as sbAuth, onAuthChange } from './client';
 import { readJSON, removeKey, uid, writeJSON } from './storage';
 import { PASS_MARK, TRACKS } from '../data/academy';
 import type { LessonProgress, Profile } from './types';

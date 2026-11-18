@@ -48,7 +48,7 @@ When a lead marks an applicant **Accepted**, they can **Confirm contribution** w
 ## Safeguarding
 
 - Reports arrive by email with "Safeguarding concern" in the subject (from the link in every message thread and on `/safeguarding`). Reply within one working day.
-- To suspend an account immediately: in Supabase → Authentication → Users, delete it, or ban it with the Auth admin API (`ban_duration`) if you need to keep the record for an investigation.
+- To suspend an account immediately: in the database (`auth.users` / `neon_auth.user`), delete it or revoke session tokens.
 - School students' passports are private by design; certificates stay verifiable by ID.
 
 ## Weekly numbers (Admin → Overview)

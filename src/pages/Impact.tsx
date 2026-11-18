@@ -7,7 +7,7 @@ import { LABS } from '../data/labs';
 import { PROGRAMS } from '../data/programs';
 import { useApp } from '../lib/app';
 import { FOUNDER, LIVE } from '../lib/config';
-import { db } from '../lib/supabase';
+import { db } from '../lib/client';
 import { Link } from '../lib/router';
 
 export const SOURCES = [

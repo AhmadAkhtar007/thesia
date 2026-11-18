@@ -1,93 +1,155 @@
+<div align="center">
+
 # Thesia
 
-The research network and learning platform for students. Students find people working on their question, join real research projects in defined CRediT roles, learn methods in a free Academy, track verified conferences and labs, and build a public research passport. Started in Pakistan, built for every country.
+**The Research Network & Learning Platform for Students**
 
-**Live demo:** https://thesia-gamma.vercel.app (Vercel project `thesia`, demo mode: data is saved in the visitor's browser until Supabase keys are added).
+[![React](https://img.shields.io/badge/React-19.2-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Neon](https://img.shields.io/badge/Neon-Serverless_Postgres-00E599?style=flat-square&logo=postgresql&logoColor=black)](https://neon.tech/)
+[![Neon Auth](https://img.shields.io/badge/Auth-Better_Auth-black?style=flat-square)](https://better-auth.com/)
+[![License](https://img.shields.io/badge/License-All_Rights_Reserved-red?style=flat-square)](LICENSE)
 
-## What's in the box
+Students find people working on their question, join real research projects in defined CRediT roles, master research methodology in a free Academy, and build a verified public research passport.
 
-| Area | What it does | Where |
-|---|---|---|
-| Home + search | Ask a research question; a live concept map highlights matching topics; search across everything | `src/pages/Home.tsx`, `src/pages/Search.tsx`, `src/components/Atlas.tsx` |
-| Projects marketplace | Browse/filter projects, fit score, apply for a role, post a project, owners review applications | `src/pages/Projects.tsx`, `ProjectDetail.tsx`, `ProjectNew.tsx` |
-| Fellowships & programmes | 18 real programmes linked to official pages | `src/pages/Opportunities.tsx`, `src/data/programs.ts` |
-| People | Research passports with CRediT contribution records | `src/pages/People.tsx` |
-| Conferences | Verified Pakistan 2026 conferences with deadlines and status, country picker + waitlist for other countries | `src/pages/Conferences.tsx`, `src/data/conferences.ts` |
-| Labs | 19 Pakistani research labs and centres | `src/pages/Labs.tsx`, `src/data/labs.ts` |
-| Academy | 5 tracks, 23 lessons with quizzes and progress | `src/pages/Learn.tsx`, `src/data/academy/*` |
-| Bootcamps | 7 cohorts, fair pricing by country, reservations, scholarships, checkout hook | `src/pages/Bootcamps.tsx`, `src/data/bootcamps.ts` |
-| Tools | Question builder, Legit Check, outreach composer, sample size, citations, consent forms | `src/pages/tools/*` |
-| Research guide | AI mentor (Claude) with a built-in coach fallback | `src/pages/Guide.tsx`, `src/lib/guide.ts`, `supabase/functions/ask-thesia` |
-| Pricing, institutions, impact | Freemium plans, B2B offers, the evidence case with sources | `src/pages/Pricing.tsx`, `Institutions.tsx`, `Impact.tsx` |
-| Accounts | Sign up/in (password, magic link, Google), onboarding, dashboard with outputs editor and referral link | `src/pages/Auth.tsx`, `Dashboard.tsx` |
-| Messages | Applicant ↔ project-lead threads tied to each application, with a report link | `src/components/Thread.tsx` |
-| Confirmed contributions | Leads confirm an accepted contributor's CRediT roles; they appear on the passport | `ProjectDetail.tsx`, `confirm_contribution()` |
-| Certificates | Verifiable certificates for finished tracks and bootcamps, LinkedIn add-to-profile, print to PDF | `src/pages/Certificate.tsx` |
-| Cohort space | Joining link, schedule, materials, weekly hand-ins and instructor feedback for enrolled students | `src/pages/Cohort.tsx` |
-| Organisations (B2B) | Schools and universities: invite link/code, seat limits, coordinator dashboard, CSV export, sample dashboard at `/org/sample` | `src/pages/Org.tsx` |
-| Notifications | Header bell and `/notifications` for applications, messages, certificates, feedback | `src/pages/Notifications.tsx` |
-| Admin console | Metrics, enquiry inbox, enrollments → certificates, cohorts and feedback, organisations, profile verification | `src/pages/Admin.tsx` |
-| Industry challenges, safeguarding | Company research challenges with forms; safeguarding commitments for under-18s | `src/pages/Challenges.tsx`, `Safeguarding.tsx` |
-| SEO + installable app | One prerendered HTML file per public page with link-preview tags, sitemap, robots, web manifest, service worker | `scripts/build.mjs`, `src/seo.ts`, `public/` |
+[Live Demo](https://thesia-gamma.vercel.app) • [Architecture](#architecture) • [Getting Started](#getting-started) • [Tech Stack](#tech-stack)
 
-## Run it
+</div>
+
+---
+
+## Overview
+
+Thesia bridges the gap between ambitious students and real academic research. By standardizing student research contributions with international academic frameworks (CRediT taxonomy), Thesia provides verifiable proof of work for early-career researchers, undergrads, and high-school students.
+
+### Core Capabilities
+
+- **Project Marketplace:** Browse, filter, and apply for research projects with explicit CRediT contributor roles (Conceptualization, Methodology, Software, Formal Analysis, Writing).
+- **Research Passport:** Public, verifiable academic profiles tracking confirmed project contributions, published outputs, and earned certifications.
+- **Concept Atlas:** Live interactive concept map connecting multidisciplinary topics and research questions.
+- **Free Academy:** 5 curated methodology tracks (23 interactive lessons) covering scoping, fieldwork, data analysis, reporting, and literature sourcing.
+- **Ecosystem Directory:** Verified national research labs, 2026 academic conferences, deadlines, and international fellowships.
+- **AI Research Mentor:** Context-aware research guide powered by Claude and grounded in academic research ethics.
+
+---
+
+## Architecture
+
+Thesia is engineered for speed, minimal bundle overhead, and zero backend server maintenance using the **Neon Serverless Stack**:
+
+```mermaid
+flowchart TD
+    subgraph Client ["Client (Browser)"]
+        UI["React 19 + TypeScript"]
+        Atlas["Interactive Concept Map"]
+        Passport["Research Passports & CRediT Engine"]
+    end
+
+    subgraph Neon ["Neon Serverless Cloud Infrastructure"]
+        DB[("Neon Serverless Postgres<br/>(Autoscaling & Scale-to-Zero)")]
+        Auth["Neon Auth<br/>(Managed Better Auth + Ed25519 JWKS)"]
+        RT["Neon Realtime<br/>(Live WebSockets)"]
+        AIGW["Neon AI Gateway<br/>(LLM Routing & Quota Engine)"]
+    end
+
+    UI -->|"HTTP Query via @neondatabase/serverless"| DB
+    UI -->|"Session & OAuth Tokens"| Auth
+    UI -->|"Live Thread Updates"| RT
+    UI -->|"Research Coaching Prompts"| AIGW
+    Auth -.->|"Row-Level Security (auth.user_id)"| DB
+```
+
+- **Database:** Serverless Postgres decoupled storage and compute with instant branching and scale-to-zero.
+- **Driver:** `@neondatabase/serverless` over stateless HTTP `fetch()`—zero connection pooling bottlenecks.
+- **Authentication:** Native Managed Better Auth residing directly inside the database (`neon_auth` schema), preserving user state across database branches.
+- **Build System:** Zero-bundler overhead—compiled directly with custom `esbuild` pipeline producing full static prerenders for SEO alongside client hydration bundles.
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| **Frontend Framework** | React 19, TypeScript, React Icons |
+| **Typography & Design** | Custom Design System, Literata & Atkinson Hyperlegible Next fonts |
+| **Bundling & SEO** | `esbuild` custom pipeline (`scripts/build.mjs`), static prerendering |
+| **Database** | Neon Serverless PostgreSQL (pgcrypto, Row-Level Security) |
+| **Database Driver** | `@neondatabase/serverless` |
+| **Authentication** | Neon Auth (Managed Better Auth) |
+| **Realtime** | Neon Realtime WebSocket streams |
+| **Hosting** | Vercel (Edge CDN + Static Distribution) |
+
+---
+
+## Getting Started
+
+### Prerequisites
+- Node.js 20+
+- Neon account ([neon.tech](https://neon.tech))
+
+### 1. Clone & Install
+```bash
+git clone https://github.com/AhmadAkhtar007/thesia.git
+cd thesia
+npm install
+```
+
+### 2. Configure Environment
+Copy the example environment template:
+```bash
+cp .env.example .env.local
+```
+Fill in your Neon connection strings and endpoints from your Neon Console.
+
+### 3. Run Schema Migrations
+Apply the database schema, security policies, and seed data:
+```bash
+node scripts/migrate-neon.mjs
+```
+
+### 4. Start Development Server
+```bash
+npm run dev
+```
+Open [http://localhost:5173](http://localhost:5173) in your browser.
+
+---
+
+## Production Build
 
 ```bash
-npm install
-npm run dev        # http://localhost:5173 (demo mode until you add Supabase keys)
-npm run build      # production build in dist/
-npm run build:artifact   # one self-contained HTML file in dist-artifact/
+# Compile web distribution with prerendered SEO pages
+npm run build
+
+# Run TypeScript type safety checks
+npm run typecheck
 ```
 
-Requires Node 20+. The build uses esbuild directly (`scripts/build.mjs`); there is no other bundler.
+---
 
-### Demo mode vs live mode
-
-Without Neon settings the app runs in **demo mode**: sample projects and profiles, and everything a visitor does is stored in their browser. With `DATABASE_URL` (or `.env.local` pulled from Neon) set at build time, it runs in **live mode** against **Neon Serverless Postgres** and **Neon Auth**. All data access goes through one interface (`src/lib/repo/types.ts`) with two implementations (`local.ts`, `remote.ts`).
-
-## Set up the live backend (Neon)
-
-The project uses the **Neon Serverless Stack** (Postgres, Auth, Functions, Realtime, and AI Gateway):
-
-1. **Link and Provision with Neon CLI:**
-   ```bash
-   neon init -y --branch production --services postgres,auth,ai-gateway,functions,realtime
-   neon deploy
-   ```
-2. **Apply Database Schema & Seed Data:**
-   ```bash
-   node scripts/migrate-neon.mjs
-   ```
-3. **Run in Live Mode:**
-   ```bash
-   npm run dev
-   ```
-
-## Code map
+## Project Structure
 
 ```
-src/
-  App.tsx              routes
-  lib/                 config, router, Supabase client, data layer, search/matching, pricing, guide
-  components/          layout, ledger rows, concept map, UI primitives
-  pages/               one file per page (tools in pages/tools)
-  data/                curated listings (conferences, labs, programmes), bootcamps, Academy lessons, samples
-  styles/app.css       the design system (tokens at the top)
-supabase/
-  migrations/          0001 core schema, 0002 platform (admin, orgs, certificates, cohorts, messages, notifications)
-  seed.sql             sample projects + track/bootcamp catalogue (generated by scripts/gen-seed.mjs)
-  setup.sql            0001 + 0002 + seed in one file, for a one-paste setup
-  functions/           ask-thesia (AI guide), lemon-webhook (payments)
+thesia/
+├── .env.example          # Clean environment configuration template
+├── neon.ts               # Neon Infrastructure-as-Code policy
+├── scripts/
+│   ├── build.mjs         # esbuild build and prerendering pipeline
+│   └── migrate-neon.mjs  # Neon database migration runner
+├── neon/
+│   └── setup.sql         # Core schema, RLS policies, and seed data
+├── src/
+│   ├── components/       # Layout, concept map, ledger rows, UI primitives
+│   ├── data/             # Curated conferences, labs, bootcamps, and lessons
+│   ├── lib/              # Database client, Neon adapters, matching engine
+│   ├── pages/            # Application routes (Tools, Academy, Passports)
+│   └── styles/           # Lab notebook design system tokens
+└── docs/                 # Operational and setup runbooks
 ```
 
-## Running it day to day
+---
 
-See [`docs/OPERATIONS.md`](docs/OPERATIONS.md): onboarding a school, running a cohort from seat to certificate, answering the inbox and verifying passports.
+## License
 
-## Keeping listings honest
-
-Conferences, labs and programmes are curated in `src/data/*.ts` and link to the official page they were verified against. Only add events hosted by a university, society or institute. `LISTINGS_VERIFIED_ON` in `src/lib/config.ts` records the last check.
-
-## Design
-
-Concept: a researcher's lab notebook. Indigo ink on cool graph paper, a yellow highlighter for what's relevant to you, the notebook's red margin rule for deadlines and lessons. Typefaces: Literata (display) and Atkinson Hyperlegible Next (body), chosen for readability by people reading in a second language. Light and dark (cyanotype) themes are defined as tokens at the top of `src/styles/app.css`.
+Copyright © 2026 Thesia. All rights reserved.
+Unauthorized copying, modification, or distribution of this software is strictly prohibited.

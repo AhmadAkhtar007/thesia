@@ -10,7 +10,7 @@ import { ALL_LESSONS } from '../data/academy';
 import { BOOTCAMPS } from '../data/bootcamps';
 import { LIVE, TARGET } from './config';
 import { parseQuery, rankConferences, rankLabs, rankLessons, rankPrograms, rankProjects, rankPeople } from './match';
-import { invokeFunction, ApiError } from './supabase';
+import { invokeFunction, ApiError } from './client';
 import type { Person, Project } from './types';
 
 export type ChatTurn = { role: 'user' | 'assistant'; content: string };

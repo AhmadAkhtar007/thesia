@@ -1,7 +1,7 @@
 // Live data store backed by Supabase (tables in supabase/migrations/0001 and 0002).
 
 import { SAMPLE_CERTIFICATES, SAMPLE_ORG, SAMPLE_ORG_REPORT } from '../../data/samples';
-import { db } from '../supabase';
+import { db } from '../client';
 import type {
   Application,
   Assignment,
