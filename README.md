@@ -144,7 +144,7 @@ thesia/
 │   ├── lib/              # Database client, Neon adapters, matching engine
 │   ├── pages/            # Application routes (Tools, Academy, Passports)
 │   └── styles/           # Lab notebook design system tokens
-└── docs/                 # Operational and setup runbooks
+└── public/               # Static assets and Web App manifest
 ```
 
 ---
